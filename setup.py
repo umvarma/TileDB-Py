@@ -115,6 +115,7 @@ def build_libtiledb(src_dir):
         os.makedirs(libtiledb_build_dir)
     print("Building libtiledb in directory {}...".format(libtiledb_build_dir))
     cmake_cmd = ["cmake", "-DCMAKE_INSTALL_PREFIX={}".format(libtiledb_install_dir),
+                 "-DCMAKE_GENERATOR_PLATFORM=x64",
                  "-DCMAKE_BUILD_TYPE=Release",
                  "-DTILEDB_TESTS=OFF",
                  "-DTILEDB_HDFS=ON",
