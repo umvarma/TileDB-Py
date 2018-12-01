@@ -175,7 +175,10 @@ def find_or_install_libtiledb(setuptools_cmd):
             print("Copying file {0} to {1}".format(src, dest))
             shutil.copy(src, dest)
         # Update the TileDB Extension instance with correct paths.
-        tiledb_ext.library_dirs += [os.path.join(install_dir, "lib")]
+        if os.name == "posix":
+            tiledb_ext.library_dirs += [os.path.join(install_dir, "lib")]
+        elif os.name == "nt":
+            tiledb_ext.library_dirs += [os.path.join(install_dir, "bin")]
         tiledb_ext.include_dirs += [os.path.join(install_dir, "include")]
         # Update package_data so the shared object gets installed with the Python module.
         libtiledb_objects = [os.path.join("native", libname) for libname in libtiledb_library_names()]
