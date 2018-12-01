@@ -64,6 +64,8 @@ def libtiledb_exists(library_dirs):
             lib_name = "libtiledb.dylib"
         else:
             lib_name = "libtiledb.so"
+    elif os.name == "nt":
+        lib_name = "tiledb.dll"
     try:
         ctypes.CDLL(lib_name)
         return lib_name
@@ -83,7 +85,7 @@ def libtiledb_library_names():
         else:
             return ["libtiledb.so"]
     elif os.name == "nt":
-        return ["tiledb.lib"]
+        return ["tiledb.dll", "tbb.dll"]
     else:
         raise RuntimeError("Unsupported OS name " + os.name)
 
@@ -165,7 +167,7 @@ def find_or_install_libtiledb(setuptools_cmd):
         # Copy libtiledb shared object(s) to the package directory so they can be found
         # with package_data.
         for libname in libtiledb_library_names():
-            src = os.path.join(install_dir, "lib", libname)
+            src = os.path.join(install_dir, "bin", libname)
             dest_dir = os.path.join(TILEDB_PKG_DIR, "native")
             if not os.path.exists(dest_dir):
                 os.makedirs(dest_dir)
