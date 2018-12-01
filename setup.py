@@ -90,6 +90,16 @@ def libtiledb_library_names():
         raise RuntimeError("Unsupported OS name " + os.name)
 
 
+def libtiledb_external_library_names():
+    """
+    :return: List of shared library names that tiledb depends upon.
+    """
+    if os.name == "nt":
+        return ["zlib.dll", "zstd.dll", "libbz2.dll"]
+    else:
+        return []
+
+
 def download_libtiledb():
     """
     Downloads the native TileDB source.
@@ -146,6 +156,16 @@ def build_libtiledb(src_dir):
     return libtiledb_install_dir
 
 
+def get_externals_install_dir(src_dir):
+    """
+    :param src_dir: Path to libtiledb source directory.
+    :return: Path to the directory where the externals are installed
+    """
+    libtiledb_build_dir = os.path.join(src_dir, "build")
+    externals_install_dir = os.path.join(libtiledb_build_dir, "externals", "install")
+    return externals_install_dir
+
+
 def find_or_install_libtiledb(setuptools_cmd):
     """
     Find the TileDB library required for building the Cython extension. If not found,
@@ -174,6 +194,17 @@ def find_or_install_libtiledb(setuptools_cmd):
             dest = os.path.join(dest_dir, libname)
             print("Copying file {0} to {1}".format(src, dest))
             shutil.copy(src, dest)
+        externals_install_dir = externals_install_libtiledb(src_dir)
+        # Copy external libraries that libtiledb shared object(s) depend upon to the package
+        # directory so they can be found with package_data.
+        for libname in libtiledb_external_library_names():
+            src = os.path.join(externals_install_dir, "bin", libname)
+            dest_dir = os.path.join(TILEDB_PKG_DIR, "native")
+            if not os.path.exists(dest_dir):
+                os.makedirs(dest_dir)
+            dest = os.path.join(dest_dir, libname)
+            print("Copying file {0} to {1}".format(src, dest))
+            shutil.copy(src, dest)
         # Update the TileDB Extension instance with correct paths.
         if os.name == "posix":
             tiledb_ext.library_dirs += [os.path.join(install_dir, "lib")]
@@ -182,6 +213,8 @@ def find_or_install_libtiledb(setuptools_cmd):
         tiledb_ext.include_dirs += [os.path.join(install_dir, "include")]
         # Update package_data so the shared object gets installed with the Python module.
         libtiledb_objects = [os.path.join("native", libname) for libname in libtiledb_library_names()]
+        libtiledb_external_objects = [os.path.join("native", libname) for libname in libtiledb_external_library_names()]
+        libtiledb_objects.extend(libtiledb_external_objects)
         setuptools_cmd.distribution.package_data.update({"tiledb": libtiledb_objects})
 
 
