@@ -130,7 +130,7 @@ def build_libtiledb(src_dir):
                  "-DCMAKE_GENERATOR_PLATFORM=x64",
                  "-DCMAKE_BUILD_TYPE=Release",
                  "-DTILEDB_TESTS=OFF",
-                 "-DTILEDB_HDFS=ON",
+                 "-DTILEDB_HDFS={}".format("ON" if os.name == "posix" else "OFF"),
                  "-DTILEDB_S3=ON",
                  ".."]
 
